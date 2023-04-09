@@ -1,15 +1,19 @@
 import { addContact } from '../../redux/contactsSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import css from './Form.module.css';
+import { useState } from 'react';
 
-export const FormContact = () => {
-  const contacts = useSelector(state => state.contacts.contacts);
+export function FormContact() {
+  const [name, setName] = useState('');
+  const [number, setNumber] = useState(' ');
+
   const dispatch = useDispatch();
+  const contacts = useSelector(state => state.contacts.contacts);
+  const names = contacts.map(obj => obj.name);
 
-  const inputChange = newName => {
-    return contacts.find(({ name }) => {
-      return name.toLowerCase() === newName.toLowerCase();
-    });
+  const inputChange = event => {
+  const { name, value } = event.target;
+  name === 'name' ? setName(value) : setNumber(value);
   };
 
   const onSubmit = event => {
@@ -17,11 +21,13 @@ export const FormContact = () => {
     const form = event.target;
     const name = form.elements.name.value;
     const number = form.elements.number.value;
-    if (inputChange(name)) {
-      return alert(`${name} is already in Contacts`);
+    if (!names.includes(name)) {
+      dispatch(addContact(name, number));
+    } else {
+      alert(`${name} is already in contacts`);
     }
-    dispatch(addContact(name, number));
-    form.reset();
+    setName('');
+    setNumber('');
   };
 
   return (
@@ -35,6 +41,7 @@ export const FormContact = () => {
         title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
         required
         onChange={inputChange}
+        value={name}
       />
       <label className={css.form__label}>Number</label>
       <input
@@ -45,10 +52,11 @@ export const FormContact = () => {
         title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
         required
         onChange={inputChange}
+        value={number}
       />
       <button type="submit" className={css.form__btn}>
         Add contact
       </button>
     </form>
   );
-};
+}
